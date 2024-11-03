@@ -122,3 +122,27 @@ colunas = [
     # 'QT_TUR_ESP_CC',
     # 'QT_TUR_ESP_CE'
 ]
+
+
+# Função para calcular o tamanho do DataFrame em MB
+def tamanho_em_mb(df):
+    return df.memory_usage(deep=True).sum() / (1024 ** 2)
+
+
+# Função para dividir o DataFrame em pedaços de no máximo 50 MB
+def dividir_dataframe(df, tamanho_max_mb=50):
+    # Calcula o número total de linhas e o tamanho atual do DataFrame
+    num_linhas = len(df)
+    tamanho_atual_mb = tamanho_em_mb(df)
+
+    # Calcula o número aproximado de linhas para um pedaço de 50 MB
+    linhas_por_pedaco = int(num_linhas * (tamanho_max_mb / tamanho_atual_mb))
+
+    # Divide o DataFrame em pedaços
+    pedaços = [df[i:i + linhas_por_pedaco] for i in range(0, num_linhas, linhas_por_pedaco)]
+
+    # Salva cada pedaço em um arquivo CSV separado
+    for i, pedaço in enumerate(pedaços):
+        nome_arquivo = f'parte_{i + 1}.csv'
+        pedaço.to_csv(nome_arquivo, index=False)
+        print(f'Salvando {nome_arquivo} com tamanho aproximado de {tamanho_em_mb(pedaço):.2f} MB')
